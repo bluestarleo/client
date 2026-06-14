@@ -13,12 +13,43 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
-// Helper component to update map view dynamically
-function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }) {
+export interface NearbyPoi {
+  id: number;
+  name: string;
+  category: string;
+  lat: number;
+  lon: number;
+  distance: number;
+  walkingTime: number;
+}
+
+// Controller component to update map view and fit bounds dynamically
+function MapController({
+  center,
+  zoom,
+  customMarker,
+  pois
+}: {
+  center: [number, number];
+  zoom: number;
+  customMarker: CustomMarker | null;
+  pois: NearbyPoi[];
+}) {
   const map = useMap();
+
   useEffect(() => {
-    map.setView(center, zoom, { animate: true, duration: 1.0 });
-  }, [center, zoom, map]);
+    if (customMarker && pois.length > 0) {
+      const bounds = L.latLngBounds([L.latLng(customMarker.lat, customMarker.lon)]);
+      pois.forEach((poi) => {
+        bounds.extend(L.latLng(poi.lat, poi.lon));
+      });
+      // Add padding so all pins fit comfortably in view
+      map.fitBounds(bounds, { padding: [50, 50], animate: true, duration: 1.2 });
+    } else {
+      map.setView(center, zoom, { animate: true, duration: 1.0 });
+    }
+  }, [center, zoom, customMarker, pois, map]);
+
   return null;
 }
 
@@ -33,9 +64,10 @@ interface MapComponentProps {
   selectedArticle: Article | null;
   cityId: number;
   customMarker: CustomMarker | null;
+  pois: NearbyPoi[];
 }
 
-export default function MapComponent({ articles, selectedArticle, cityId, customMarker }: MapComponentProps) {
+export default function MapComponent({ articles, selectedArticle, cityId, customMarker, pois }: MapComponentProps) {
   // Fallback center is Tokyo coordinates if no articles are present
   const defaultCenter: [number, number] = [35.6895, 139.6917];
   
@@ -66,7 +98,7 @@ export default function MapComponent({ articles, selectedArticle, cityId, custom
         scrollWheelZoom={true}
         className="w-full h-full"
       >
-        <ChangeView center={center} zoom={zoom} />
+        <MapController center={center} zoom={zoom} customMarker={customMarker} pois={pois} />
         
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -78,7 +110,7 @@ export default function MapComponent({ articles, selectedArticle, cityId, custom
           <Marker
             position={[customMarker.lat, customMarker.lon]}
             icon={L.divIcon({
-              html: `<div class="relative flex items-center justify-center">
+              html: `<div class="relative flex items-center justify-center animate-pulse">
                        <span class="animate-ping absolute inline-flex h-6 w-6 rounded-full bg-rose-400 opacity-75"></span>
                        <span class="relative flex h-4.5 w-4.5 rounded-full bg-rose-600 border-2 border-white shadow-md"></span>
                      </div>`,
@@ -100,6 +132,36 @@ export default function MapComponent({ articles, selectedArticle, cityId, custom
             </Popup>
           </Marker>
         )}
+
+        {/* Nearby OSM POIs */}
+        {customMarker && pois.map((poi) => (
+          <Marker
+            key={`poi-${poi.id}`}
+            position={[poi.lat, poi.lon]}
+            icon={L.divIcon({
+              html: `<div class="relative flex items-center justify-center hover:scale-110 transition-transform">
+                       <span class="absolute inline-flex h-5 w-5 rounded-full bg-emerald-400 opacity-50"></span>
+                       <span class="relative flex h-3 w-3 rounded-full bg-emerald-500 border border-white shadow-sm"></span>
+                     </div>`,
+              className: "poi-marker-icon-wrapper",
+              iconSize: [20, 20],
+              iconAnchor: [10, 10],
+            })}
+          >
+            <Popup>
+              <div className="p-2 max-w-[200px]">
+                <h4 className="font-bold text-xs text-emerald-600">{poi.name}</h4>
+                <span className="inline-block text-[9px] font-semibold text-[var(--muted)] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded mt-0.5">
+                  {poi.category}
+                </span>
+                <div className="text-[10px] text-[var(--muted)] mt-2 pt-2 border-t border-[var(--muted-border)] flex items-center gap-1">
+                  <span>🚶‍♂️</span>
+                  <span>{poi.walkingTime} min walk ({poi.distance}m)</span>
+                </div>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
 
         {articles.map((article) => (
           <Marker
