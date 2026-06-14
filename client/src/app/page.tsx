@@ -15,7 +15,8 @@ export default function Home() {
   `).all() as CityGroup[];
 
   return (
-    <div className="min-h-screen bg-[var(--background)] py-12 px-6 md:px-12 lg:px-24">
+    <div className="min-h-screen flex flex-col justify-between bg-[var(--background)] pt-12 pb-8 px-6 md:px-12 lg:px-24">
+      <div className="flex-grow">
       {/* Header section */}
       <header className="max-w-6xl mx-auto mb-16 text-center md:text-left">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-sm font-semibold mb-4 border border-blue-500/20">
@@ -76,6 +77,11 @@ export default function Home() {
           </div>
         )}
       </main>
+      </div>
+
+      <footer className="max-w-6xl w-full mx-auto mt-16 pt-8 border-t border-[var(--muted-border)] text-center text-sm text-[var(--muted)]">
+        <p>© {new Date().getFullYear()} AI Travel Companion. All rights reserved.</p>
+      </footer>
     </div>
   );
 }
