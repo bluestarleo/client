@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { db, CityGroup } from "@/lib/db";
+import Footer from "@/components/Footer";
 
 // Force Next.js to not static cache this since SQLite data changes via worker script
 export const dynamic = "force-dynamic";
@@ -79,9 +80,7 @@ export default function Home() {
       </main>
       </div>
 
-      <footer className="max-w-6xl w-full mx-auto mt-16 pt-8 border-t border-[var(--muted-border)] text-center text-sm text-[var(--muted)]">
-        <p>© {new Date().getFullYear()} AI Travel Companion. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

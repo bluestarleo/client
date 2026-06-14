@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Footer from "@/components/Footer";
 
 export const dynamic = "force-dynamic";
 
@@ -65,8 +66,8 @@ export default async function ArticlePage({ params, searchParams }: PageProps) {
   const coordinates = article.coordinates?.[0];
 
   return (
-    <div className="min-h-screen bg-[var(--background)] py-12 px-6 md:px-12 lg:px-24">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen flex flex-col justify-between bg-[var(--background)] pt-12 pb-8 px-6 md:px-12 lg:px-24">
+      <div className="flex-grow max-w-4xl w-full mx-auto">
         {/* Navigation */}
         <nav className="mb-8">
           <Link
@@ -115,7 +116,7 @@ export default async function ArticlePage({ params, searchParams }: PageProps) {
           {/* Details Body */}
           <div className="p-8 md:p-12 flex flex-col md:flex-row gap-8">
             {/* Left Content Area */}
-            <div className="flex-1">
+            <div className="flex-grow">
               <h2 className="text-xl font-bold uppercase tracking-wider text-[var(--muted)] mb-4">
                 Article Overview
               </h2>
@@ -171,6 +172,7 @@ export default async function ArticlePage({ params, searchParams }: PageProps) {
           </div>
         </article>
       </div>
+      <Footer />
     </div>
   );
 }
