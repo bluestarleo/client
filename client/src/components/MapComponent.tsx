@@ -86,6 +86,16 @@ export default function MapComponent({ articles, selectedArticle, cityId, custom
     iconAnchor: [12, 12],
   });
 
+  // Custom default icon for POIs to avoid Leaflet default bundling issues in Next.js
+  const defaultMarkerIcon = L.divIcon({
+    html: `<div class="relative flex items-center justify-center hover:scale-110 transition-transform">
+             <span class="relative flex h-3.5 w-3.5 rounded-full bg-blue-500 border-2 border-white shadow-md"></span>
+           </div>`,
+    className: "default-poi-marker-icon-wrapper",
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
+
   return (
     <div className="w-full h-full relative rounded-xl overflow-hidden border border-[var(--muted-border)] shadow-md">
       <MapContainer
@@ -163,9 +173,9 @@ export default function MapComponent({ articles, selectedArticle, cityId, custom
           const isSelected = selectedArticle?.pageid === article.pageid;
           return (
             <Marker
-              key={article.pageid}
+              key={`${article.pageid}-${isSelected ? 'selected' : 'default'}`}
               position={[article.lat, article.lon]}
-              icon={isSelected ? selectedMarkerIcon : undefined}
+              icon={isSelected ? selectedMarkerIcon : defaultMarkerIcon}
               eventHandlers={{
                 click: () => {
                   onSelectArticle(article);
