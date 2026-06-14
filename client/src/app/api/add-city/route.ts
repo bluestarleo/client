@@ -15,10 +15,22 @@ export async function POST(req: NextRequest) {
     const workerDir = path.resolve(process.cwd(), '../worker');
     const agentScript = path.join(workerDir, 'agent.py');
 
-    console.log(`[API] Starting agent.py for city: "${trimmedCity}"`);
+    // Detect correct python command (Windows launcher 'py' vs standard 'python')
+    let pythonCmd = 'python';
+    if (process.platform === 'win32') {
+      try {
+        const { execSync } = require('child_process');
+        execSync('py --version', { stdio: 'ignore' });
+        pythonCmd = 'py';
+      } catch (e) {
+        pythonCmd = 'python';
+      }
+    }
+
+    console.log(`[API] Starting agent.py using command "${pythonCmd}" for city: "${trimmedCity}"`);
 
     // Spawn Python process
-    const pythonProcess = spawn('python', [agentScript, trimmedCity], {
+    const pythonProcess = spawn(pythonCmd, [agentScript, trimmedCity], {
       cwd: workerDir,
       env: {
         ...process.env,
