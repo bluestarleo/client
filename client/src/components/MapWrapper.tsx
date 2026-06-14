@@ -14,12 +14,22 @@ const DynamicMap = dynamic(() => import("./MapComponent"), {
   ),
 });
 
+import { CustomMarker } from "./MapComponent";
+
 interface MapWrapperProps {
   articles: Article[];
   selectedArticle: Article | null;
   cityId: number;
+  customMarker: CustomMarker | null;
 }
 
-export default function MapWrapper({ articles, selectedArticle, cityId }: MapWrapperProps) {
-  return <DynamicMap articles={articles} selectedArticle={selectedArticle} cityId={cityId} />;
+export default function MapWrapper({ articles, selectedArticle, cityId, customMarker }: MapWrapperProps) {
+  return (
+    <DynamicMap
+      articles={articles}
+      selectedArticle={selectedArticle}
+      cityId={cityId}
+      customMarker={customMarker}
+    />
+  );
 }

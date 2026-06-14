@@ -22,18 +22,28 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
   return null;
 }
 
+export interface CustomMarker {
+  lat: number;
+  lon: number;
+  label: string;
+}
+
 interface MapComponentProps {
   articles: Article[];
   selectedArticle: Article | null;
   cityId: number;
+  customMarker: CustomMarker | null;
 }
 
-export default function MapComponent({ articles, selectedArticle, cityId }: MapComponentProps) {
+export default function MapComponent({ articles, selectedArticle, cityId, customMarker }: MapComponentProps) {
   // Fallback center is Tokyo coordinates if no articles are present
   const defaultCenter: [number, number] = [35.6895, 139.6917];
   
-  // Calculate center of map: either the selected article, or average coordinates of all articles
+  // Calculate center of map: either the custom marker, the selected article, or average coordinates of all articles
   const getMapCenter = (): [number, number] => {
+    if (customMarker) {
+      return [customMarker.lat, customMarker.lon];
+    }
     if (selectedArticle) {
       return [selectedArticle.lat, selectedArticle.lon];
     }
@@ -46,7 +56,7 @@ export default function MapComponent({ articles, selectedArticle, cityId }: MapC
   };
 
   const center = getMapCenter();
-  const zoom = selectedArticle ? 15 : 13;
+  const zoom = customMarker ? 16 : selectedArticle ? 15 : 13;
 
   return (
     <div className="w-full h-full relative rounded-xl overflow-hidden border border-[var(--muted-border)] shadow-md">
@@ -62,6 +72,34 @@ export default function MapComponent({ articles, selectedArticle, cityId }: MapC
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
+        {/* Custom Searched Marker */}
+        {customMarker && (
+          <Marker
+            position={[customMarker.lat, customMarker.lon]}
+            icon={L.divIcon({
+              html: `<div class="relative flex items-center justify-center">
+                       <span class="animate-ping absolute inline-flex h-6 w-6 rounded-full bg-rose-400 opacity-75"></span>
+                       <span class="relative flex h-4.5 w-4.5 rounded-full bg-rose-600 border-2 border-white shadow-md"></span>
+                     </div>`,
+              className: "custom-marker-icon-wrapper",
+              iconSize: [24, 24],
+              iconAnchor: [12, 12],
+            })}
+          >
+            <Popup>
+              <div className="p-2 max-w-[200px]">
+                <h4 className="font-bold text-sm text-rose-600 flex items-center gap-1.5">
+                  📍 <span>Searched Location</span>
+                </h4>
+                <p className="text-xs text-[var(--muted)] mt-1 font-medium">{customMarker.label}</p>
+                <div className="text-[10px] font-mono text-[var(--muted)]/70 mt-1">
+                  ({customMarker.lat.toFixed(4)}, {customMarker.lon.toFixed(4)})
+                </div>
+              </div>
+            </Popup>
+          </Marker>
+        )}
 
         {articles.map((article) => (
           <Marker
